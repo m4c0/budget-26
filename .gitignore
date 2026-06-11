@@ -1,0 +1,4 @@
+build
+budget-26
+*.o
+*.sqlite

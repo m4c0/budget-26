@@ -1,4 +1,5 @@
 build
 budget-26
+*.csv
 *.o
 *.sqlite

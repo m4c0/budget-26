@@ -1,7 +1,37 @@
-CREATE TABLE IF NOT EXISTS periodic (
-  per_pk       INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  per_period   INTEGER NOT NULL,
-  per_name     TEXT NOT NULL,
-  per_currency TEXT NOT NULL,
-  per_value    REAL NOT NULL
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS cur (
+  cur_id   INTEGER NOT NULL PRIMARY KEY,
+  cur_name TEXT    NOT NULL,
+  cur_valu REAL    NOT NULL
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS per (
+  per_id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  per_peri INTEGER NOT NULL,
+  per_name TEXT    NOT NULL,
+  per_valu REAL    NOT NULL,
+  per_cur  INTEGER NOT NULL,
+  FOREIGN KEY (per_cur) REFERENCES cur(cur_id)
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS cat (
+  cat_id   INTEGER NOT NULL PRIMARY KEY,
+  cat_name TEXT    NOT NULL
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS bnk (
+  bnk_id   INTEGER NOT NULL PRIMARY KEY,
+  bnk_name TEXT    NOT NULL
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS exp (
+  exp_id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  exp_date TEXT    NOT NULL,
+  exp_desc TEXT    NOT NULL,
+  exp_valu REAL    NOT NULL,
+  exp_cat  INTEGER NOT NULL,
+  exp_bnk  INTEGER NOT NULL,
+  FOREIGN KEY (exp_cat) REFERENCES cat(cat_id),
+  FOREIGN KEY (exp_bnk) REFERENCES bnk(bnk_id)
 ) STRICT;

@@ -24,23 +24,19 @@ static char * slurp(const char * file) {
   return slurped;
 }
 
-static sqlite3 * db_open() {
-  sqlite3 * db;
-  if (sqlite3_open("budget-26.sqlite", &db)) {
-    fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-    sqlite3_close(db);
-    return NULL;
-  }
-  return db;
+static sqlite3 * db;
+static int db_open() {
+  if (!sqlite3_open("budget-26.sqlite", &db)) return 0;
+  fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+  sqlite3_close(db);
+  db = NULL;
+  return 1;
 }
 static int db_exec(sqlite3 * db, const char * sql) {
-  if (sqlite3_exec(db, sql, NULL, NULL, NULL)) {
-    fprintf(stderr, "Can't exec: %s\n", sqlite3_errmsg(db));
-    sqlite3_close(db);
-    return 1;
-  }
+  if (!sqlite3_exec(db, sql, NULL, NULL, NULL)) return 0;
+  fprintf(stderr, "Can't exec: %s\n", sqlite3_errmsg(db));
   sqlite3_close(db);
-  return 0;
+  return 1;
 }
 
 static int cmd_bank() {
@@ -48,13 +44,13 @@ static int cmd_bank() {
 }
 
 static int cmd_init() {
-  sqlite3 * db = db_open();
   if (db_exec(db, slurp("db.sql"))) return 1;
-  sqlite3_close(db);
   return 0;
 }
 
 int main() {
+  if (db_open()) return 1;
+
   char buf[1024];
   while (1) {
     printf("> ");
@@ -64,4 +60,6 @@ int main() {
     else if (0 == strcmp(buf, "init\n")) { if (cmd_init()) return 1; }
     else puts("unknown command");
   }
+
+  sqlite3_close(db);
 }

@@ -40,6 +40,20 @@ static int db_exec(sqlite3 * db, const char * sql) {
 }
 
 static int cmd_bank() {
+  sqlite3_stmt * stmt;
+  if (sqlite3_prepare_v2(db, "SELECT * FROM bnk", -1, &stmt, NULL)) {
+    sqlite3_close(db);
+    return 1;
+  }
+
+  printf("ID  Name\n");
+  while (sqlite3_step(stmt) != SQLITE_DONE) {
+    printf("%3d %s\n",
+        sqlite3_column_int(stmt, 0),
+        sqlite3_column_text(stmt, 1));
+  }
+
+  sqlite3_finalize(stmt);
   return 0;
 }
 

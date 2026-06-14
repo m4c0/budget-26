@@ -43,7 +43,7 @@ static sqlite3_stmt * db_prepare(const char * sql) {
 }
 
 static int cmd_bank() {
-  sqlite3_stmt * stmt = db_prepare("SELECT * FROM bnk");
+  sqlite3_stmt * stmt = db_prepare("SELECT * FROM bnk ORDER BY bnk_name");
   if (!stmt) return 1;
 
   printf("ID  Name\n");
@@ -75,6 +75,39 @@ static int cmd_bank_add() {
   return 0;
 }
 
+static int cmd_cat() {
+  sqlite3_stmt * stmt = db_prepare("SELECT * FROM cat ORDER BY cat_name");
+  if (!stmt) return 1;
+
+  printf("ID  Name\n");
+  while (sqlite3_step(stmt) != SQLITE_DONE) {
+    printf("%3d %s\n",
+        sqlite3_column_int(stmt, 0),
+        sqlite3_column_text(stmt, 1));
+  }
+
+  sqlite3_finalize(stmt);
+  return 0;
+}
+
+static int cmd_cat_add() {
+  printf("Name> ");
+
+  char name[1024];
+  if (!fgets(name, sizeof(name), stdin)) return 1;
+
+  sqlite3_stmt * stmt = db_prepare("INSERT INTO cat (cat_name) VALUES (?)");
+  sqlite3_bind_text(stmt, 1, name, strlen(name) - 1, NULL);
+  if (sqlite3_step(stmt) != SQLITE_DONE) {
+    fprintf(stderr, "Can't step: %s\n", sqlite3_errmsg(db));
+    sqlite3_finalize(stmt);
+    return 1;
+  }
+
+  sqlite3_finalize(stmt);
+  return 0;
+}
+
 static int cmd_init() {
   return db_exec(slurp("db.sql"));
 }
@@ -87,6 +120,8 @@ static int loop() {
     if (0 == strcmp(buf, "quit\n")) break;
     else if (0 == strcmp(buf, "bank\n"))     { if (cmd_bank())     return 1; }
     else if (0 == strcmp(buf, "bank add\n")) { if (cmd_bank_add()) return 1; }
+    else if (0 == strcmp(buf, "cat\n"))      { if (cmd_cat())      return 1; }
+    else if (0 == strcmp(buf, "cat add\n"))  { if (cmd_cat_add())  return 1; }
     else puts("unknown command");
   }
   return 0;
